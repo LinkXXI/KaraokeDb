@@ -27,16 +27,16 @@ app.use('/', indexRouter);
 app.use('/data', dataRouter);
 
 
-const monitoringService = childProcesss.fork('./monitoringService.js');
-monitoringService.on('message', (message) => {
-    console.log(message);
-});
+//const monitoringService = childProcesss.fork('./monitoringService.js');
+//monitoringService.on('message', (message) => {
+//    console.log(message);
+//});
 
 
-monitoringService.on('error', function (data) {
-    console.log("IM HERE - Error");
-    console.log('test: ' + data);
-});
+//monitoringService.on('error', function (data) {
+//    console.log("IM HERE - Error");
+//    console.log('test: ' + data);
+//});
 
 //require('./monitoringService');
 
