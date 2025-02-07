@@ -33,6 +33,11 @@ monitoringService.on('message', (message) => {
 });
 
 
+monitoringService.on('error', function (data) {
+    console.log("IM HERE - Error");
+    console.log('test: ' + data);
+});
+
 //require('./monitoringService');
 
 module.exports = app;
