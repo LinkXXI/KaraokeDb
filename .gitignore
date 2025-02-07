@@ -131,3 +131,6 @@ dist
 
 # docker compose
 docker-compose.*
+
+#temp files
+*temp*
