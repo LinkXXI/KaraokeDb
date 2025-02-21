@@ -1,68 +1,57 @@
 const knex = require('./knex');
+const { search } = require('./routes');
 
 var getTotalCount = async function(cache){
-    await knex.count('id as count')
-        .from('KaraokeTracks')
-        .first()
-        .then(function(total){
-            cache.totalTracks = total.count;
-        });
+    //await knex.countDistinct(['TrackArtist', 'TrackName'])
+    //    .from('KaraokeTracks')
+    //    .first()
+    //    .then(function(total){
+    //        cache.totalTracks = total.count;
+    //    });
+    var count = await knex('DistinctTracks').count();
+    cache.totalTracks = count[0]['count(*)'];
 };
 
 module.exports.getTotalCount = getTotalCount;
 
 
-const getQueryTotal = async function(sql) {
-    qb = sql.clone();
+const getQueryTotal = async function(sql, columns) {
     let count = 0;
-    await qb.count('id as count').then(function(r){
+
+    qb = sql.clone().count();
+    await qb.then(function(r){
         count = r[0].count;
     });
+
+    console.log(qb.toSQL().toNative());
     return count;
 }
 
 module.exports.getQueryTotal = getQueryTotal;
 
 const queryTracks = async function(query){
-    columns = query.columns.map(rows => rows.data)
+    var columns = query.columns.map(rows => rows.data)
+    var sql = knex('DistinctTracks').distinct(columns);
+    var searchParams = query.search.value.split(' ');
+    var totalFiltered = -1;
 
-    sql = knex.distinct(columns).from('KaraokeTracks');
-
-    if(query.search.value !== ''){
-        searchParams = query.search.value.split(' ');
-
-        columns.forEach(function(column, colIndex){
-            if(colIndex === 0){
-                sql.where(function(qb){
-                   searchParams.forEach(function(string, stringIndex){ 
-                        if(stringIndex = 0){
-                            qb.whereILike(column, '%' + string + '%');
-                        }else{
-                            qb.orWhereILike(column, '%' + string + '%');
-                        }
-                    });
-                });
+    if(searchParams.length > 0 && searchParams[0] !== ''){      
+        searchParams.forEach(function(string, stringIndex){ 
+            if(stringIndex = 0){
+                sql.whereILike("SearchStringAlt", `%${string}%`);
             }else{
-                sql.orWhere(function(qb){
-                    searchParams.forEach(function(string, stringIndex){ 
-                         if(stringIndex = 0){
-                             qb.whereILike(column, '%' + string + '%');
-                         }else{
-                             qb.orWhereILike(column, '%' + string + '%');
-                         }
-                     });
-                 });
-            };
+                sql.andWhereILike("SearchStringAlt", `%${string}%`);
+            }
         });
-    };
 
-    console.log(sql.toSQL().toNative());
-    totalFiltered = await getQueryTotal(sql);
+        var rowCount = await sql.clone().count();//await getQueryTotal(sql, columns);
+        totalFiltered = rowCount[0]["count(*)"]
+    };
   
     sql.limit(query.length)
     sql.offset(query.start);
 
-    orderArray = [];
+    var orderArray = [];
 
     query.order.forEach(function(obj, i){
         orderArray.push({
@@ -71,11 +60,8 @@ const queryTracks = async function(query){
         })
     });
 
-
-    rows = await sql.select();
+    var rows = await sql.select();
     
-    console.log(sql.toSQL().toNative());
-
     return {
         data: rows,
         totalPossible: totalFiltered,

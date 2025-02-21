@@ -27,7 +27,7 @@ router.get('/', async function(req, res, next) {
 
   payload.draw = parseInt(req.query.draw);
   payload.recordsTotal = cache.totalTracks;
-  payload.recordsFiltered = data.totalPossible;
+  payload.recordsFiltered = data.totalPossible !== -1 ? data.totalPossible : cache.totalTracks;
   payload.data = data.data;
   
   res.setHeader('Content-Type', 'application/json');
