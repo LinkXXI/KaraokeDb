@@ -2,12 +2,6 @@ const knex = require('./knex');
 const { search } = require('./routes');
 
 var getTotalCount = async function(cache){
-    //await knex.countDistinct(['TrackArtist', 'TrackName'])
-    //    .from('KaraokeTracks')
-    //    .first()
-    //    .then(function(total){
-    //        cache.totalTracks = total.count;
-    //    });
     var count = await knex('DistinctTracks').count();
     cache.totalTracks = count[0]['count(*)'];
 };
