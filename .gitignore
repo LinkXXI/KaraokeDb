@@ -134,3 +134,5 @@ docker-compose.*
 
 #temp files
 *temp*
+
+package-lock.json
